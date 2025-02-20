@@ -1,6 +1,5 @@
 package by.bogdanova.L13_02_2025_2;
 
-
 public abstract class Pet extends Animal {
 
     private Owner owner;
