@@ -25,6 +25,6 @@ public abstract class Pet extends Animal {
     @Override
     public String toString() {
         return super.toString() + " (Домашнее животное, хозяин: " + owner.getName() +
-                " " + owner.getSurname() + ")";
+                " " + owner.getSurname() + " " + owner.getSex() + ")";
     }
 }

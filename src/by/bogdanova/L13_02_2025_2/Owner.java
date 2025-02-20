@@ -13,6 +13,8 @@ public class Owner {
     private static String[] surnames = new String[5];; // - массив фамилий.
     private List<Pet> pets = new ArrayList<>(); // - массив животных которые есть у владельца.
     private static int totalOwners; // – общее количество владельцев.
+    private static String[] arrSex = new String[2];
+    private String sex; // пол хозяина
 
     private Random random = new Random();
 
@@ -31,10 +33,20 @@ public class Owner {
         names[4] = "Алина";
     }
 
+    static  {
+        arrSex[0] = "male";
+        arrSex[1] = "female";
+    }
+
     public Owner() {
         this.id = ++totalOwners;
         this.name = names[random.nextInt(names.length)];
         this.surname = surnames[random.nextInt(surnames.length)];
+        this.sex = arrSex[random.nextInt(arrSex.length)];
+    }
+
+    public String getSex() {
+        return sex;
     }
 
     public int getId() {
@@ -61,5 +73,4 @@ public class Owner {
         pets.add(pet);
         pet.setOwner(this);
     }
-
 }
