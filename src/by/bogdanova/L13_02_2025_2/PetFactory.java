@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class PetFactory {
 
-    static String[] names = {"Кира", "Арчи", "Аиса", "Мира", "Дина"};
-    static Random random = new Random();
+    private static String[] names = {"Кира", "Арчи", "Аиса", "Мира", "Дина"};
+    private static Random random = new Random();
 
     public static Pet next() {
         boolean isCat = random.nextBoolean();
