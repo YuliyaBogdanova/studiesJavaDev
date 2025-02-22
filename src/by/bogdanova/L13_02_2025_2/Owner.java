@@ -9,10 +9,11 @@ public class Owner {
     private int id; // - уникальный идентификатор
     private String name; // – имя владельца.
     private String surname; // – фамилия владельца.
-    private static String[] names = new String[5];
-    ; // - массив имен.
-    private static String[] surnames = new String[5];
-    ; // - массив фамилий.
+
+    private static String[] names = new String[5];     // - массив имен.
+
+    private static String[] surnames = new String[5];  // - массив фамилий.
+
     private List<Pet> pets = new ArrayList<>(); // - массив животных которые есть у владельца.
     private static int totalOwners; // – общее количество владельцев.
 

@@ -5,8 +5,8 @@ import java.util.List;
 
 public class Task00 {
 
-    private static int COUNT_OWNER = 100;
-    private static int COUNT_PETS = 200;
+    private static final int COUNT_OWNER = 100;
+    private static final int COUNT_PETS = 200;
 
     public static void main(String[] args) {
 

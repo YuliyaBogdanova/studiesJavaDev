@@ -2,23 +2,11 @@ package by.bogdanova.L13_02_2025_2;
 
 public abstract class Animal {
 
-    protected int id; // уникальный идентификатор
+    private int id; // уникальный идентификатор
     private String name; // (имя животного)
     private String species; // (вид)
     private int age; // (возраст)
     private static int totalAnimals = 0;
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSpecies() {
-        return species;
-    }
-
-    public int getAge() {
-        return age;
-    }
 
     public Animal(String name, String species, int age) {
         this.id = ++totalAnimals;  //
@@ -37,7 +25,20 @@ public abstract class Animal {
         System.out.println(name + " спит");
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
     // возвращает описание животного
+    @Override
     public String toString() {
         return species + " по имени " + name + ", возраст: " + age
                 + " (ID: " + id + ")";
