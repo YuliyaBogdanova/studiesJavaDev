@@ -5,19 +5,25 @@ import java.util.List;
 
 public class Task00 {
 
+    private static int COUNT_OWNER = 100;
+    private static int COUNT_PETS = 200;
+
     public static void main(String[] args) {
 
-        Owner oner1 = new Owner();
-        Owner owner2 = new Owner();
+        // Factory
+        List<Owner> owners = new ArrayList<>();
 
-        Pet cat = new Cat("Timmi", "cat", 5);
-        Pet dog = new Dog("Oliver", "dog", 3);
-        owner2.addPet(cat);
-        oner1.addPet(dog);
+        for (int i = 0; i < COUNT_OWNER; i++) {
+            Owner owner = OwnerFactory.next();
+            for (int j = 0; j < COUNT_PETS; j++) {
+                Pet pet = PetFactory.next();
+                owner.addPet(pet);
+            }
+            owners.add(owner);
+        }
 
-        System.out.println(cat.toString());
-        System.out.println(dog.toString());
-
-        System.out.println("Общее количество домашних животных: " + Owner.getTotalOwners());
+        for (Owner owner1 : owners) {
+            System.out.println(owner1.toString());
+        }
     }
 }

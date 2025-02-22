@@ -63,4 +63,9 @@ public class Owner {
         pets.add(pet);
         pet.setOwner(this);
     }
+
+    @Override
+    public String toString() {
+        return name + " " + surname + ". Количество домашних питомцев - " + this.pets.size();
+    }
 }
