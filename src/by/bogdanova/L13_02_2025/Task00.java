@@ -22,8 +22,8 @@ public class Task00 {
             owners.add(owner);
         }
 
-        for (Owner owner1 : owners) {
-            System.out.println(owner1.toString());
+        for (Owner owner : owners) {
+            System.out.println(owner.toString());
         }
     }
 }
