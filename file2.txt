@@ -1,0 +1,2 @@
+hello i'm new line
+[str1] [str2]
