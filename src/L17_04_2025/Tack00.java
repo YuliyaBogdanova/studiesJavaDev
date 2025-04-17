@@ -72,7 +72,7 @@ public class Tack00 {
         listApple.sort(Comparator.comparing(Apple::getWeight).thenComparing(Apple::getColour));
 
         Predicate<Apple> predicate = a5 -> a5.getWeight() == 100;
-        Predicate<Apple> and = predicate.and(a6 -> Colour.GREEN.equals(a6.getColour()));
+        Predicate<Apple> and = predicate.and(a5 -> Colour.GREEN.equals(a5.getColour()));
 
 
 
