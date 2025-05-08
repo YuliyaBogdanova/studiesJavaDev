@@ -1,4 +1,4 @@
-package L17_04_2025;
+package by.bogdanova.L17_04_2025;
 
 import by.bogdanova.L14_04_2025.Apple;
 import by.bogdanova.L14_04_2025.Colour;
@@ -8,8 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.*;
-
-import static java.util.Objects.compare;
 
 public class Tack00 {
 
