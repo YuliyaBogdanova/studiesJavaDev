@@ -62,3 +62,10 @@ DROP COLUMN birth_date;
 
 ALTER TABLE customers
 RENAME COLUMN name TO full_name;
+
+CREATE TABLE payments(
+payment_id SERIAL PRIMARY KEY,
+purchase_id INTEGER REFERENCES purchases(id),
+method VARCHAR,
+paid_at DATE
+);
