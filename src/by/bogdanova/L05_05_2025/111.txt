@@ -102,3 +102,8 @@ SELECT us.full_name AS "ФИО", COUNT(o.id) as "Количество заказ
 JOIN orders o ON us.id = o.user_id
 GROUP BY us.full_name
 HAVING COUNT(o.id) > 1;
+
+количество заказов у каждого пользака
+SELECT us.full_name AS "ФИО", COUNT(o.id) as "Количество заказов" FROM users us
+LEFT JOIN orders o ON us.id = o.user_id
+GROUP BY us.full_name
