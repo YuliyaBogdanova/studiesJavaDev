@@ -69,3 +69,36 @@ purchase_id INTEGER REFERENCES purchases(id),
 method VARCHAR,
 paid_at DATE
 );
+
+/// 19_05_2025
+SELECT us.full_name AS "ФИО", o.created_at AS "Время заказа" FROM users us
+LEFT JOIN orders o ON us.id = o.user_id;
+
+заказы больше 200
+SELECT us.full_name AS "ФИО", o.total as "Сумма" , o.created_at AS "Время заказа" FROM users us
+LEFT JOIN orders o ON us.id = o.user_id
+WHERE o.total > 200;
+
+сумма заказов для каждого пользователя
+SELECT us.full_name AS "ФИО", SUM(o.total) as "Сумма" FROM users us
+LEFT JOIN orders o ON us.id = o.user_id
+GROUP BY us.full_name
+ORDER BY 2;  // сортировка по второй колонке
+
+max сумма заказа
+SELECT us.full_name AS "ФИО", SUM(o.total) as "Сумма" FROM users us
+JOIN orders o ON us.id = o.user_id
+GROUP BY us.full_name
+ORDER BY 2 DESC
+LIMIT 1;
+
+SELECT us.full_name AS "ФИО", SUM(o.total) as "Сумма" FROM users us
+JOIN orders o ON us.id = o.user_id
+GROUP BY us.full_name
+HAVING SUM(o.total) > 300;
+
+пользаки с количеством заказа >1
+SELECT us.full_name AS "ФИО", COUNT(o.id) as "Количество заказов" FROM users us
+JOIN orders o ON us.id = o.user_id
+GROUP BY us.full_name
+HAVING COUNT(o.id) > 1;
