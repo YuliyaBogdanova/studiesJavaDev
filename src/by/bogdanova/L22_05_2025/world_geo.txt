@@ -1,0 +1,355 @@
+-- Создание схемы (если нужно)
+CREATE SCHEMA IF NOT EXISTS world_geo;
+
+-- Таблица континентов
+CREATE TABLE world_geo.continents (
+    continent_id SERIAL PRIMARY KEY,
+    continent_name VARCHAR(50) NOT NULL,
+    area_sq_km DECIMAL(15,2),
+    population BIGINT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица стран
+CREATE TABLE world_geo.countries (
+    country_id SERIAL PRIMARY KEY,
+    country_name VARCHAR(100) NOT NULL,
+    country_code CHAR(3) UNIQUE,
+    capital VARCHAR(100),
+    population BIGINT,
+    area_sq_km DECIMAL(15,2),
+    continent_id INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_continent 
+        FOREIGN KEY (continent_id) 
+        REFERENCES world_geo.continents(continent_id)
+        ON DELETE SET NULL
+);
+
+-- Таблица городов
+CREATE TABLE world_geo.cities (
+    city_id SERIAL PRIMARY KEY,
+    city_name VARCHAR(100) NOT NULL,
+    country_id INTEGER,
+    population INTEGER,
+    foundation_year INTEGER,
+    is_capital BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_country 
+        FOREIGN KEY (country_id) 
+        REFERENCES world_geo.countries(country_id)
+        ON DELETE CASCADE,
+    CONSTRAINT check_foundation_year 
+        CHECK (foundation_year <= EXTRACT(YEAR FROM CURRENT_DATE))
+);
+
+-- Таблица языков
+CREATE TABLE world_geo.languages (
+    language_id SERIAL PRIMARY KEY,
+    language_name VARCHAR(50) NOT NULL,
+    language_family VARCHAR(50),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица связи стран и языков (многие ко многим)
+CREATE TABLE world_geo.country_languages (
+    country_id INTEGER,
+    language_id INTEGER,
+    is_official BOOLEAN DEFAULT FALSE,
+    percentage DECIMAL(5,2),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_country_languages 
+        PRIMARY KEY (country_id, language_id),
+    CONSTRAINT fk_country 
+        FOREIGN KEY (country_id) 
+        REFERENCES world_geo.countries(country_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_language 
+        FOREIGN KEY (language_id) 
+        REFERENCES world_geo.languages(language_id)
+        ON DELETE CASCADE,
+    CONSTRAINT check_percentage 
+        CHECK (percentage >= 0 AND percentage <= 100)
+);
+
+-- Таблица достопримечательностей
+CREATE TABLE world_geo.landmarks (
+    landmark_id SERIAL PRIMARY KEY,
+    landmark_name VARCHAR(100) NOT NULL,
+    city_id INTEGER,
+    description TEXT,
+    year_built INTEGER,
+    type VARCHAR(20) CHECK (type IN ('Historical', 'Natural', 'Cultural', 'Religious', 'Modern', 'Monument')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_city 
+        FOREIGN KEY (city_id) 
+        REFERENCES world_geo.cities(city_id)
+        ON DELETE SET NULL,
+    CONSTRAINT check_year_built 
+        CHECK (year_built <= EXTRACT(YEAR FROM CURRENT_DATE))
+);
+
+-- Создание индексов для улучшения производительности
+CREATE INDEX idx_countries_continent ON world_geo.countries(continent_id);
+CREATE INDEX idx_cities_country ON world_geo.cities(country_id);
+CREATE INDEX idx_landmarks_city ON world_geo.landmarks(city_id);
+CREATE INDEX idx_country_languages_country ON world_geo.country_languages(country_id);
+CREATE INDEX idx_country_languages_language ON world_geo.country_languages(language_id);
+
+-- Функция для обновления поля updated_at
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Триггеры для автоматического обновления updated_at
+CREATE TRIGGER update_continents_modtime
+BEFORE UPDATE ON world_geo.continents
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_countries_modtime
+BEFORE UPDATE ON world_geo.countries
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_cities_modtime
+BEFORE UPDATE ON world_geo.cities
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_languages_modtime
+BEFORE UPDATE ON world_geo.languages
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_country_languages_modtime
+BEFORE UPDATE ON world_geo.country_languages
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_landmarks_modtime
+BEFORE UPDATE ON world_geo.landmarks
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-------------------------------------------------------------------------------------------------------
+
+-- Заполнение таблицы Continents
+INSERT INTO Continents (continent_name, area_sq_km, population) VALUES
+('Asia', 44579000, 4641054775),
+('Africa', 30370000, 1340598147),
+('North America', 24709000, 592072212),
+('South America', 17840000, 430759766),
+('Antarctica', 14000000, 1106),
+('Europe', 10180000, 747636026),
+('Australia', 8600000, 43111704);
+
+-- Заполнение таблицы Countries
+INSERT INTO Countries (country_name, country_code, capital, population, area_sq_km, continent_id) VALUES
+('China', 'CHN', 'Beijing', 1439323776, 9596961, 1),
+('India', 'IND', 'New Delhi', 1380004385, 3287263, 1),
+('United States', 'USA', 'Washington, D.C.', 331002651, 9372610, 3),
+('Indonesia', 'IDN', 'Jakarta', 273523615, 1904569, 1),
+('Pakistan', 'PAK', 'Islamabad', 220892340, 881912, 1),
+('Brazil', 'BRA', 'Brasília', 212559417, 8515767, 4),
+('Nigeria', 'NGA', 'Abuja', 206139589, 923768, 2),
+('Bangladesh', 'BGD', 'Dhaka', 164689383, 147570, 1),
+('Russia', 'RUS', 'Moscow', 145934462, 17098242, 6),
+('Mexico', 'MEX', 'Mexico City', 128932753, 1964375, 3),
+('Japan', 'JPN', 'Tokyo', 126476461, 377975, 1),
+('Germany', 'DEU', 'Berlin', 83783942, 357022, 6),
+('France', 'FRA', 'Paris', 65273511, 551695, 6),
+('United Kingdom', 'GBR', 'London', 67886011, 242900, 6),
+('Italy', 'ITA', 'Rome', 60461826, 301340, 6),
+('Switzerland', 'CHE', 'Bern', 8654622, 41285, 6), 
+('Australia', 'AUS', 'Canberra', 25788221, 7692024, 7); 
+
+
+-- Заполнение таблицы Cities (исправленная версия без дубликатов)
+INSERT INTO world_geo.cities (city_name, country_id, population, foundation_year, is_capital) VALUES
+-- Китай
+('Beijing', 1, 21710000, 1045, TRUE),
+('Shanghai', 1, 24183300, 751, FALSE),
+('Chongqing', 1, 31072000, 316, FALSE),
+('Guangzhou', 1, 14043500, 214, FALSE),
+-- Индия
+('New Delhi', 2, 25780339, 1911, TRUE),
+('Mumbai', 2, 12442373, 1507, FALSE),
+('Bangalore', 2, 8436675, 1537, FALSE),
+('Hyderabad', 2, 6809970, 1591, FALSE),
+-- США
+('Washington, D.C.', 3, 705749, 1790, TRUE),
+('New York', 3, 8336817, 1624, FALSE),
+('Los Angeles', 3, 3979576, 1781, FALSE),
+('Chicago', 3, 2693976, 1833, FALSE),
+-- Россия
+('Moscow', 9, 12655050, 1147, TRUE),
+('Saint Petersburg', 9, 5384342, 1703, FALSE),
+('Novosibirsk', 9, 1625631, 1893, FALSE),
+('Yekaterinburg', 9, 1493749, 1723, FALSE),
+('Kazan', 9, 1257391, 1005, FALSE),
+('Samara', 9, 1156659, 1586, FALSE),
+('Vladivostok', 9, 604901, 1860, FALSE),
+-- Япония
+('Tokyo', 11, 13960000, 1457, TRUE),
+('Yokohama', 11, 3726167, 1859, FALSE),
+('Osaka', 11, 2668586, 1889, FALSE),
+('Nagoya', 11, 2283289, 1610, FALSE),
+-- Индонезия
+('Jakarta', 4, 10770487, 397, TRUE),
+('Surabaya', 4, 2848835, 1293, FALSE),
+('Bandung', 4, 2500332, 1810, FALSE),
+-- Пакистан
+('Islamabad', 5, 1095064, 1960, TRUE),
+('Karachi', 5, 14916456, 1729, FALSE),
+('Lahore', 5, 11126285, 1000, FALSE),
+-- Бразилия
+('Brasília', 6, 3015268, 1960, TRUE),
+('São Paulo', 6, 12325232, 1554, FALSE),
+('Rio de Janeiro', 6, 6747815, 1565, FALSE),
+-- Нигерия
+('Abuja', 7, 1235880, 1980, TRUE),
+('Lagos', 7, 14862000, 1472, FALSE),
+('Kano', 7, 3993000, 1000, FALSE),
+-- Бангладеш
+('Dhaka', 8, 8906039, 1608, TRUE),
+('Chittagong', 8, 2581643, 1340, FALSE),
+('Khulna', 8, 1400689, 1884, FALSE),
+-- Мексика
+('Mexico City', 10, 9209944, 1325, TRUE),
+('Guadalajara', 10, 1384843, 1542, FALSE),
+('Monterrey', 10, 1135512, 1596, FALSE),
+-- Германия
+('Berlin', 12, 3644826, 1237, TRUE),
+('Hamburg', 12, 1841179, 808, FALSE),
+('Munich', 12, 1484226, 1158, FALSE),
+-- Франция
+('Paris', 13, 2148327, 259, TRUE),
+('Marseille', 13, 870731, 600, FALSE),
+('Lyon', 13, 518635, -43, FALSE),
+-- Великобритания
+('London', 14, 8982000, 47, TRUE),
+('Birmingham', 14, 1149000, 1086, FALSE),
+('Manchester', 14, 547627, 1301, FALSE),
+-- Италия
+('Rome', 15, 2870500, -753, TRUE),
+('Milan', 15, 1378689, -400, FALSE),
+('Naples', 15, 967069, -600, FALSE),
+-- Швейцария
+('Bern', 16, 133798, 1191, TRUE),
+('Zurich', 16, 402762, -15, FALSE),
+('Geneva', 16, 201818, -300, FALSE),
+-- Австралия
+('Canberra', 17, 426704, 1913, TRUE),
+('Sydney', 17, 5312000, 1788, FALSE),
+('Melbourne', 17, 5078193, 1835, FALSE),
+
+
+-- Заполнение таблицы Languages
+INSERT INTO Languages (language_name, language_family) VALUES
+('Mandarin', 'Sino-Tibetan'),
+('Hindi', 'Indo-European'),
+('English', 'Indo-European'),
+('Spanish', 'Indo-European'),
+('Arabic', 'Afro-Asiatic'),
+('Bengali', 'Indo-European'),
+('French', 'Indo-European'),
+('Russian', 'Indo-European'),
+('Portuguese', 'Indo-European'),
+('Japanese', 'Japonic'),
+('German', 'Indo-European'),
+('Italian', 'Indo-European'),
+-- Заполнение таблицы country_languages
+INSERT INTO country_languages (country_id, language_id, is_official, percentage) VALUES
+(1, 1, TRUE, 91.5),   -- Китай: Mandarin официальный язык
+(2, 2, TRUE, 44.0),   -- Индия: Hindi официальный язык
+(2, 3, TRUE, 10.6),   -- Индия: English также официальный язык
+(3, 3, TRUE, 78.0),   -- США: English официальный язык
+(4, 3, TRUE, 10.0),   -- Индонезия: English не официальный, но распространен
+(5, 3, TRUE, 8.0),    -- Пакистан: English также официальный
+(5, 5, TRUE, 95.0),   -- Пакистан: Arabic официальный язык
+(6, 9, TRUE, 98.0),   -- Бразилия: Portuguese официальный язык
+(7, 5, TRUE, 50.0),   -- Нигерия: Arabic официальный язык
+(8, 6, TRUE, 98.0),   -- Бангладеш: Bengali официальный язык
+(9, 8, TRUE, 95.0),   -- Россия: Russian официальный язык
+(10, 4, TRUE, 98.0),  -- Мексика: Spanish официальный язык
+(11, 10, TRUE, 99.0), -- Япония: Japanese официальный язык
+(12, 11, TRUE, 95.0), -- Германия: German официальный язык
+(13, 7, TRUE, 88.0),  -- Франция: French официальный язык
+(14, 3, TRUE, 98.0),  -- Великобритания: English официальный язык
+(15, 12, TRUE, 96.0), -- Италия: Italian официальный язык
+(16, 7, TRUE, 20.0),  -- Швейцария: French один из официальных
+(16, 11, TRUE, 65.0), -- Швейцария: German один из официальных
+(16, 12, TRUE, 10.0), -- Швейцария: Italian один из официальных
+(17, 3, TRUE, 73.0);  -- Австралия: English официальный язык
+
+
+-- Заполнение таблицы Landmarks
+-- Заполнение таблицы Landmarks
+INSERT INTO Landmarks (landmark_name, city_id, description, year_built, type) VALUES
+-- Китай
+('Great Wall of China', 1, 'Ancient series of walls and fortifications in northern China.', -221, 'Historical'),
+('The Bund', 2, 'Famous waterfront area in central Shanghai.', 1845, 'Cultural'),
+('Ciqikou Ancient Town', 3, 'A well-preserved ancient town in Chongqing.', 998, 'Historical'),
+('Canton Tower', 4, 'Modern observation tower in Guangzhou.', 2010, 'Modern'),
+
+-- Индия
+('Taj Mahal', 5, 'Iconic white marble mausoleum.', 1648, 'Cultural'),
+('Gateway of India', 6, 'Historic arch-monument in Mumbai.', 1924, 'Historical'),
+('Bangalore Palace', 7, 'A grand palace inspired by England’s Windsor Castle.', 1878, 'Cultural'),
+('Charminar', 8, 'A 16th-century mosque and monument in Hyderabad.', 1591, 'Religious'),
+
+-- США
+('Statue of Liberty', 9, 'A colossal neoclassical sculpture on Liberty Island.', 1886, 'Monument'),
+('Hollywood Sign', 10, 'Famous landmark overlooking Los Angeles.', 1923, 'Cultural'),
+('Willis Tower', 11, 'One of the tallest buildings in the world, located in Chicago.', 1973, 'Modern'),
+
+-- Россия
+('Kremlin', 12, 'Historic fortified complex in Moscow.', 1482, 'Historical'),
+('Winter Palace', 13, 'A Baroque palace in Saint Petersburg.', 1754, 'Cultural'),
+('Novosibirsk Opera and Ballet Theatre', 14, 'The largest theatre in Russia.', 1944, 'Cultural'),
+
+-- Япония
+('Tokyo Tower', 20, 'A communications and observation tower in Tokyo.', 1958, 'Modern'),
+('Osaka Castle', 22, 'A historic castle in Osaka.', 1583, 'Historical'),
+
+-- Индонезия
+('Borobudur', 25, 'A 9th-century Mahayana Buddhist temple.', 825, 'Religious'),
+
+-- Пакистан
+('Badshahi Mosque', 28, 'A Mughal-era mosque in Lahore.', 1673, 'Religious'),
+
+-- Бразилия
+('Christ the Redeemer', 31, 'An iconic statue of Jesus Christ overlooking Rio de Janeiro.', 1931, 'Monument'),
+
+-- Нигерия
+('Zuma Rock', 34, 'A massive monolith outside Abuja.', 'N/A', 'Natural'),
+
+-- Бангладеш
+('Ahsan Manzil', 37, 'The Pink Palace, a historical building in Dhaka.', 1872, 'Cultural'),
+
+-- Мексика
+('Chichen Itza', 40, 'A large pre-Columbian archaeological site built by the Maya.', 600, 'Historical'),
+
+-- Германия
+('Brandenburg Gate', 43, 'A neoclassical monument in Berlin.', 1791, 'Historical'),
+
+-- Франция
+('Eiffel Tower', 46, 'A wrought-iron lattice tower in Paris.', 1889, 'Modern'),
+
+-- Великобритания
+('Big Ben', 49, 'The nickname for the Great Bell of the clock at the Palace of Westminster.', 1859, 'Historical'),
+
+-- Италия
+('Colosseum', 52, 'An ancient amphitheatre in Rome.', 80, 'Historical'),
+
+-- Швейцария
+('Zytglogge', 55, 'A landmark medieval clock tower in Bern.', 1405, 'Historical'),
+
+-- Австралия
+('Sydney Opera House', 58, 'A multi-venue performing arts centre in Sydney.', 1973, 'Modern');
+
