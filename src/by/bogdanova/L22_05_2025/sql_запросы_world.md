@@ -112,19 +112,72 @@ AND percentage > 80
 ORDER BY percentage DESC
 
 ### 18. Вывести список всех стран с их крупнейшим городом
-
+SELECT country_name, MAX(c.population) FROM cities c
+JOIN countries cout ON c.country_id = cout.country_id
+GROUP BY country_name
 
 ### 19. Найти топ-3 страны с наибольшей средней плотностью населения в их городах
+SELECT c.country_name, AVG(ci.population/c.area_sq_km) AS avg_city_density
+FROM countries c
+JOIN cities ci ON c.country_id = ci.country_id
+WHERE c.area_sq_km>0
+GROUP BY country_name
+ORDER BY avg_city_density DESC
+LIMIT 3
 
 ### 20. Найти все континенты, где суммарное население стран больше 1 миллиарда, и вывести их страны
+SELECT * FROM continents con
+JOIN countries c ON con.continent_id = c.continent_id
+WHERE con.continent_id IN (
+SELECT c2.continent_id FROM continents c2
+GROUP BY c2.continent_id
+HAVING SUM(c2.population)>1000000000
+)
 
 ### 21. Найти страну с наибольшим количеством официальных языков
+SELECT country_name, COUNT(c_lg.is_official) AS count_max FROM countries c
+JOIN country_languages c_lg ON c.country_id = c_lg.country_id
+GROUP BY country_name
+ORDER BY count_max DESC
+LIMIT 1
 
-### 22.  Найти города с достопримечательностями, построенными до 1000 года, и отсортировать их по древности
+### 22.  Найти города с достопримечательностями, построенными до 1000 года, 
+### и отсортировать их по древности
+SELECT city_name, year_built FROM cities c
+JOIN landmarks ld ON c.city_id = ld.city_id
+WHERE year_built <1000
+ORDER BY year_built
 
 ### 23. Найти страны, у которых площадь меньше 1% от площади их континента
+SELECT country_name, AVG(c.area_sq_km/cont.area_sq_km)
+FROM continents cont
+JOIN countries c ON cont.continent_id = c.continent_id
+GROUP BY country_name
+HAVING AVG(c.area_sq_km/cont.area_sq_km)>=1
+
+### удалить города с населением < 250000
+DELETE FROM cities
+WHERE population < 250000
+RETURNING city_name
+
+###  увеличить население москвы на 1000000
+UPDATE cities
+SET population = population+1000000
+WHERE city_name = 'Moscow'
+RETURNING population
 
 
+CREATE VIEW capital_view AS
+SELECT
+cont.continent_name, city_name, c.population
+FROM continents cont
+JOIN countries c ON cont.continent_id = c.continent_id
+JOIN cities cit ON c.country_id = cit.country_id
+WHERE continent_name = 'Europe'
+AND is_capital
+
+Индекс для достопримечательности по типу и городу
+CREATE INDEX idx_landmarks_type_citi ON landmarks(type, city_id);
 
 
 
