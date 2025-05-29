@@ -1,0 +1,58 @@
+простая транзакция
+BEGIN;
+
+UPDATE accounts SET balance = balance-100
+WHERE user_id = 1
+
+UPDATE accounts SET balance = balance+100
+WHERE user_id = 2
+
+COMMIT;
+
+пример отката до точки сохранения
+BEGIN;
+
+UPDATE accounts SET balance = balance-100
+WHERE user_id = 1;
+
+SAVEPOINT transfer_point;
+
+UPDATE accounts SET balance = balance+100
+WHERE user_id = 2;
+
+ROLLBACK TO SAVEPOINT transfer_point;
+
+COMMIT;
+
+уровень изоляции
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+UPDATE accounts SET balance = balance-100
+WHERE user_id = 1;
+
+SAVEPOINT transfer_point;
+
+UPDATE accounts SET balance = balance+100
+WHERE user_id = 2;
+
+ROLLBACK TO SAVEPOINT transfer_point;
+
+COMMIT;
+
+Получить список всех мероприятий с указанием их названия,
+места проведения (название и адрес),
+даты проведения и количества оставшихся мест
+
+
+
+откат
+BEGIN;
+
+UPDATE accounts SET balance = balance-100
+WHERE user_id = 1;
+
+UPDATE accounts SET balance = balance+100
+WHERE user_id = 2;
+
+ROLLBACK;
