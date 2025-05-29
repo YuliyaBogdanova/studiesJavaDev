@@ -40,9 +40,7 @@ ROLLBACK TO SAVEPOINT transfer_point;
 
 COMMIT;
 
-Получить список всех мероприятий с указанием их названия,
-места проведения (название и адрес),
-даты проведения и количества оставшихся мест
+
 
 
 
@@ -56,3 +54,13 @@ UPDATE accounts SET balance = balance+100
 WHERE user_id = 2;
 
 ROLLBACK;
+
+Получить список всех мероприятий с указанием их названия,
+места проведения (название и адрес),
+даты проведения и количества оставшихся мест
+SELECT ev.name, ve.name, ve.address, ev.event_date,  AVG(ev.count_place - book.count_plase)
+FROM events ev
+JOIN venues ve ON ev.place_id = ve.place_id
+JOIN bookings book ON ev.event_id = book.event_id
+WHERE book.status NOT ('canceled')
+GROUP BY ev.name, ve.name, ve.address, ev.event_date,  AVG(ev.count_place - book.count_plase)
